@@ -23,24 +23,47 @@ public class MissionStepTest {
                 .body("size()", is(0)); // 아직 생성 요청이 없으니 0개
     }
 
-    // MissionStepTest.java에 추가
     @Test
-    void 예약_추가_및_삭제() {
+    void 시간_관리_API() {
         Map<String, String> params = new HashMap<>();
-        params.put("name", "브라운");
-        params.put("date", "2023-08-05");
-        params.put("time", "15:40");
+        params.put("startAt", "10:00");
 
         RestAssured.given().log().all()
                 .contentType(ContentType.JSON)
                 .body(params)
-                .when().post("/reservations")
+                .when().post("/times")
                 .then().log().all()
-                .statusCode(200)
-                .body("id", is(1));
+                .statusCode(200);
 
         RestAssured.given().log().all()
-                .when().delete("/reservations/1")
+                .when().get("/times")
+                .then().log().all()
+                .statusCode(200)
+                .body("size()", is(1));
+
+        RestAssured.given().log().all()
+                .when().delete("/times/1")
+                .then().log().all()
+                .statusCode(200);
+    }
+
+    @Test
+    void 예약과_시간_연결() {
+        // 시간 먼저 등록
+        Map<String, String> timeParams = new HashMap<>();
+        timeParams.put("startAt", "10:00");
+        RestAssured.given().contentType(ContentType.JSON).body(timeParams).post("/times");
+
+        // 예약 추가 (timeId = 1)
+        Map<String, Object> reservation = new HashMap<>();
+        reservation.put("name", "브라운");
+        reservation.put("date", "2023-08-05");
+        reservation.put("timeId", 1);
+
+        RestAssured.given().log().all()
+                .contentType(ContentType.JSON)
+                .body(reservation)
+                .when().post("/reservations")
                 .then().log().all()
                 .statusCode(200);
 
@@ -48,7 +71,7 @@ public class MissionStepTest {
                 .when().get("/reservations")
                 .then().log().all()
                 .statusCode(200)
-                .body("size()", is(0));
+                .body("size()", is(1));
     }
 
 }
