@@ -13,33 +13,39 @@ import java.util.List;
 @Repository
 public class ReservationTimeDao {
 
+    private static final String SELECT_ALL =
+            "SELECT id, start_at FROM reservation_time";
+
+    private static final String INSERT =
+            "INSERT INTO reservation_time (start_at) VALUES (?)";
+
+    private static final String DELETE_BY_ID =
+            "DELETE FROM reservation_time WHERE id = ?";
+
     private final JdbcTemplate jdbcTemplate;
+
+    private final RowMapper<ReservationTime> rowMapper = (rs, rowNum) ->
+            new ReservationTime(rs.getLong("id"), rs.getString("start_at"));
 
     public ReservationTimeDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    private final RowMapper<ReservationTime> rowMapper = (rs, rowNum) ->
-            new ReservationTime(rs.getLong("id"), rs.getString("start_at"));
-
     public List<ReservationTime> findAll() {
-        return jdbcTemplate.query("SELECT id, start_at FROM reservation_time", rowMapper);
+        return jdbcTemplate.query(SELECT_ALL, rowMapper);
     }
 
     public Long save(ReservationTime reservationTime) {
-        String sql = "INSERT INTO reservation_time (start_at) VALUES (?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
         jdbcTemplate.update(con -> {
-            PreparedStatement ps = con.prepareStatement(sql, new String[]{"id"});
+            PreparedStatement ps = con.prepareStatement(INSERT, new String[]{"id"});
             ps.setString(1, reservationTime.getStartAt());
             return ps;
         }, keyHolder);
-
         return keyHolder.getKey().longValue();
     }
 
     public void deleteById(Long id) {
-        jdbcTemplate.update("DELETE FROM reservation_time WHERE id = ?", id);
+        jdbcTemplate.update(DELETE_BY_ID, id);
     }
 }

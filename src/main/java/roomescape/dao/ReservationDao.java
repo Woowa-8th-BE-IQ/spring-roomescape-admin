@@ -15,11 +15,26 @@ import java.util.List;
 @Repository
 public class ReservationDao {
 
-    private final JdbcTemplate jdbcTemplate;
+    private static final String SELECT_ALL = """
+            SELECT
+                r.id       AS reservation_id,
+                r.name,
+                r.date,
+                t.id       AS time_id,
+                t.start_at AS time_value
+            FROM reservation AS r
+            INNER JOIN reservation_time AS t ON r.time_id = t.id
+            """;
 
-    public ReservationDao(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
+    private static final String SELECT_BY_ID = SELECT_ALL + "WHERE r.id = ?";
+
+    private static final String INSERT =
+            "INSERT INTO reservation (name, date, time_id) VALUES (?, ?, ?)";
+
+    private static final String DELETE_BY_ID =
+            "DELETE FROM reservation WHERE id = ?";
+
+    private final JdbcTemplate jdbcTemplate;
 
     private final RowMapper<Reservation> rowMapper = (rs, rowNum) -> {
         ReservationTime time = new ReservationTime(
@@ -34,45 +49,31 @@ public class ReservationDao {
         );
     };
 
-    private static final String SELECT_WITH_TIME = """
-            SELECT
-                r.id       AS reservation_id,
-                r.name,
-                r.date,
-                t.id       AS time_id,
-                t.start_at AS time_value
-            FROM reservation AS r
-            INNER JOIN reservation_time AS t ON r.time_id = t.id
-            """;
+    public ReservationDao(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     public List<Reservation> findAll() {
-        return jdbcTemplate.query(SELECT_WITH_TIME, rowMapper);
+        return jdbcTemplate.query(SELECT_ALL, rowMapper);
     }
 
     public Reservation findById(Long id) {
-        return jdbcTemplate.queryForObject(
-                SELECT_WITH_TIME + "WHERE r.id = ?",
-                rowMapper,
-                id
-        );
+        return jdbcTemplate.queryForObject(SELECT_BY_ID, rowMapper, id);
     }
 
     public Long save(ReservationRequest request) {
-        String sql = "INSERT INTO reservation (name, date, time_id) VALUES (?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
         jdbcTemplate.update(con -> {
-            PreparedStatement ps = con.prepareStatement(sql, new String[]{"id"});
+            PreparedStatement ps = con.prepareStatement(INSERT, new String[]{"id"});
             ps.setString(1, request.getName());
             ps.setString(2, request.getDate());
             ps.setLong(3, request.getTimeId());
             return ps;
         }, keyHolder);
-
         return keyHolder.getKey().longValue();
     }
 
     public void deleteById(Long id) {
-        jdbcTemplate.update("DELETE FROM reservation WHERE id = ?", id);
+        jdbcTemplate.update(DELETE_BY_ID, id);
     }
 }
