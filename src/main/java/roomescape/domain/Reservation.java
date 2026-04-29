@@ -1,11 +1,11 @@
-package roomescape;
+package roomescape.domain;
 
 public class Reservation {
 
     private Long id;
     private String name;
     private String date;
-    private ReservationTime time;   // String → ReservationTime
+    private ReservationTime time;
 
     public Reservation() {}
 
