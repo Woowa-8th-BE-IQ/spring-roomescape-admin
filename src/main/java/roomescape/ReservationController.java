@@ -1,14 +1,17 @@
 package roomescape;
 
+import java.sql.PreparedStatement;
+import java.util.List;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.web.bind.annotation.*;
-
-import java.sql.PreparedStatement;
-import java.util.List;
-import java.util.Map;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class ReservationController {
@@ -50,36 +53,31 @@ public class ReservationController {
 
     // POST /reservations  — 요청: { name, date, timeId }
     @PostMapping("/reservations")
-    public Reservation addReservation(@RequestBody Map<String, Object> params) {
-        String name   = (String) params.get("name");
-        String date   = (String) params.get("date");
-        Long timeId   = Long.valueOf(params.get("timeId").toString());
-
+    public Reservation addReservation(@RequestBody ReservationRequest request) {
         String sql = "INSERT INTO reservation (name, date, time_id) VALUES (?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(sql, new String[]{"id"});
-            ps.setString(1, name);
-            ps.setString(2, date);
-            ps.setLong(3, timeId);
+            ps.setString(1, request.getName());
+            ps.setString(2, request.getDate());
+            ps.setLong(3, request.getTimeId());
             return ps;
         }, keyHolder);
 
         Long newId = keyHolder.getKey().longValue();
 
-        // 방금 INSERT한 예약을 JOIN해서 다시 조회 (time 객체 포함 응답)
         String selectSql = """
-                SELECT
-                    r.id   AS reservation_id,
-                    r.name,
-                    r.date,
-                    t.id   AS time_id,
-                    t.start_at AS time_value
-                FROM reservation AS r
-                INNER JOIN reservation_time AS t ON r.time_id = t.id
-                WHERE r.id = ?
-                """;
+            SELECT
+                r.id   AS reservation_id,
+                r.name,
+                r.date,
+                t.id   AS time_id,
+                t.start_at AS time_value
+            FROM reservation AS r
+            INNER JOIN reservation_time AS t ON r.time_id = t.id
+            WHERE r.id = ?
+            """;
         return jdbcTemplate.queryForObject(selectSql, rowMapper, newId);
     }
 
