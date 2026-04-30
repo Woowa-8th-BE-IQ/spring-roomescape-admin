@@ -25,12 +25,9 @@ public class ReservationDao {
             FROM reservation AS r
             INNER JOIN reservation_time AS t ON r.time_id = t.id
             """;
-
     private static final String SELECT_BY_ID = SELECT_ALL + "WHERE r.id = ?";
-
     private static final String INSERT =
             "INSERT INTO reservation (name, date, time_id) VALUES (?, ?, ?)";
-
     private static final String DELETE_BY_ID =
             "DELETE FROM reservation WHERE id = ?";
 

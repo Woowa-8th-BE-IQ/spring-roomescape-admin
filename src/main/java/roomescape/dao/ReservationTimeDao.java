@@ -1,5 +1,6 @@
 package roomescape.dao;
 
+import java.util.Objects;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -42,7 +43,8 @@ public class ReservationTimeDao {
             ps.setString(1, reservationTime.getStartAt());
             return ps;
         }, keyHolder);
-        return keyHolder.getKey().longValue();
+
+        return Objects.requireNonNull(keyHolder.getKey()).longValue();
     }
 
     public void deleteById(Long id) {
