@@ -6,6 +6,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import roomescape.domain.ReservationTime;
+import roomescape.dto.ReservationTimeRequest;
 
 import java.sql.PreparedStatement;
 import java.util.List;
@@ -36,11 +37,11 @@ public class ReservationTimeDao {
         return jdbcTemplate.query(SELECT_ALL, rowMapper);
     }
 
-    public Long save(ReservationTime reservationTime) {
+    public Long save(ReservationTimeRequest request) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(INSERT, new String[]{"id"});
-            ps.setString(1, reservationTime.startAt());   // ← getStartAt() → startAt()
+            ps.setString(1, request.startAt());
             return ps;
         }, keyHolder);
         return Objects.requireNonNull(keyHolder.getKey()).longValue();
