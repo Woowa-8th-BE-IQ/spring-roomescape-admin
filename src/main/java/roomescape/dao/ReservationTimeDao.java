@@ -1,5 +1,6 @@
 package roomescape.dao;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -11,12 +12,16 @@ import roomescape.dto.ReservationTimeRequest;
 import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 public class ReservationTimeDao {
 
     private static final String SELECT_ALL =
             "SELECT id, start_at FROM reservation_time";
+
+    private static final String SELECT_BY_ID =
+            "SELECT id, start_at FROM reservation_time WHERE id = ?";
 
     private static final String INSERT =
             "INSERT INTO reservation_time (start_at) VALUES (?)";
@@ -35,6 +40,16 @@ public class ReservationTimeDao {
 
     public List<ReservationTime> findAll() {
         return jdbcTemplate.query(SELECT_ALL, rowMapper);
+    }
+
+    public Optional<ReservationTime> findById(Long id) {
+        try {
+            return Optional.of(
+                    jdbcTemplate.queryForObject(SELECT_BY_ID, rowMapper, id)
+            );
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 
     public Long save(ReservationTimeRequest request) {

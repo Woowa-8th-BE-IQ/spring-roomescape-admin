@@ -27,8 +27,6 @@ public class ReservationDao {
             INNER JOIN reservation_time AS t ON r.time_id = t.id
             """;
 
-    private static final String SELECT_BY_ID = SELECT_ALL + "WHERE r.id = ?";
-
     private static final String INSERT =
             "INSERT INTO reservation (name, date, time_id) VALUES (?, ?, ?)";
 
@@ -58,20 +56,17 @@ public class ReservationDao {
         return jdbcTemplate.query(SELECT_ALL, rowMapper);
     }
 
-    public Reservation findById(Long id) {
-        return jdbcTemplate.queryForObject(SELECT_BY_ID, rowMapper, id);
-    }
-
-    public Long save(ReservationRequest request) {
+    public Reservation save(ReservationRequest request, ReservationTime time) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(INSERT, new String[]{"id"});
-            ps.setString(1, request.name());      // ← getName() → name()
-            ps.setString(2, request.date());      // ← getDate() → date()
-            ps.setLong(3, request.timeId());      // ← getTimeId() → timeId()
+            ps.setString(1, request.name());
+            ps.setString(2, request.date());
+            ps.setLong(3, request.timeId());
             return ps;
         }, keyHolder);
-        return Objects.requireNonNull(keyHolder.getKey()).longValue();
+        Long id = Objects.requireNonNull(keyHolder.getKey()).longValue();
+        return new Reservation(id, request.name(), request.date(), time);
     }
 
     public void deleteById(Long id) {
