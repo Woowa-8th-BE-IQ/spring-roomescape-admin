@@ -10,6 +10,8 @@ import roomescape.domain.ReservationTime;
 import roomescape.dto.ReservationRequest;
 
 import java.sql.PreparedStatement;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -38,12 +40,12 @@ public class ReservationDao {
     private final RowMapper<Reservation> rowMapper = (rs, rowNum) -> {
         ReservationTime time = new ReservationTime(
                 rs.getLong("time_id"),
-                rs.getString("time_value")
+                LocalTime.parse(rs.getString("time_value"))
         );
         return new Reservation(
                 rs.getLong("reservation_id"),
                 rs.getString("name"),
-                rs.getString("date"),
+                LocalDate.parse(rs.getString("date")),
                 time
         );
     };
@@ -61,7 +63,7 @@ public class ReservationDao {
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(INSERT, new String[]{"id"});
             ps.setString(1, request.name());
-            ps.setString(2, request.date());
+            ps.setString(2, request.date().toString());
             ps.setLong(3, request.timeId());
             return ps;
         }, keyHolder);

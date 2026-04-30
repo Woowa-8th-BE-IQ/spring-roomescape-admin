@@ -10,6 +10,7 @@ import roomescape.domain.ReservationTime;
 import roomescape.dto.ReservationTimeRequest;
 
 import java.sql.PreparedStatement;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -32,7 +33,10 @@ public class ReservationTimeDao {
     private final JdbcTemplate jdbcTemplate;
 
     private final RowMapper<ReservationTime> rowMapper = (rs, rowNum) ->
-            new ReservationTime(rs.getLong("id"), rs.getString("start_at"));
+            new ReservationTime(
+                    rs.getLong("id"),
+                    LocalTime.parse(rs.getString("start_at"))
+            );
 
     public ReservationTimeDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -44,7 +48,7 @@ public class ReservationTimeDao {
 
     public Optional<ReservationTime> findById(Long id) {
         try {
-            return Optional.of(
+            return Optional.ofNullable(
                     jdbcTemplate.queryForObject(SELECT_BY_ID, rowMapper, id)
             );
         } catch (EmptyResultDataAccessException e) {
@@ -56,7 +60,7 @@ public class ReservationTimeDao {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(INSERT, new String[]{"id"});
-            ps.setString(1, request.startAt());
+            ps.setString(1, request.startAt().toString());
             return ps;
         }, keyHolder);
         return Objects.requireNonNull(keyHolder.getKey()).longValue();
