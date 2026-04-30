@@ -56,14 +56,15 @@ public class ReservationTimeDao {
         }
     }
 
-    public Long save(ReservationTimeRequest request) {
+    public ReservationTime save(ReservationTimeRequest request) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(INSERT, new String[]{"id"});
             ps.setString(1, request.startAt().toString());
             return ps;
         }, keyHolder);
-        return Objects.requireNonNull(keyHolder.getKey()).longValue();
+        Long id = Objects.requireNonNull(keyHolder.getKey()).longValue();
+        return new ReservationTime(id, request.startAt());
     }
 
     public void deleteById(Long id) {
