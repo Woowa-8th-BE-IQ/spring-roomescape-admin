@@ -21,8 +21,7 @@ public class ReservationTimeService {
 
     public ReservationTime add(ReservationTime reservationTime) {
         Long id = reservationTimeDao.save(reservationTime);
-        reservationTime.setId(id);
-        return reservationTime;
+        return new ReservationTime(id, reservationTime.startAt());  // 새 객체 반환
     }
 
     public void delete(Long id) {

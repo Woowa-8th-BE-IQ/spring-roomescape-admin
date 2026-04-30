@@ -11,6 +11,7 @@ import roomescape.dto.ReservationRequest;
 
 import java.sql.PreparedStatement;
 import java.util.List;
+import java.util.Objects;
 
 @Repository
 public class ReservationDao {
@@ -25,9 +26,12 @@ public class ReservationDao {
             FROM reservation AS r
             INNER JOIN reservation_time AS t ON r.time_id = t.id
             """;
+
     private static final String SELECT_BY_ID = SELECT_ALL + "WHERE r.id = ?";
+
     private static final String INSERT =
             "INSERT INTO reservation (name, date, time_id) VALUES (?, ?, ?)";
+
     private static final String DELETE_BY_ID =
             "DELETE FROM reservation WHERE id = ?";
 
@@ -62,12 +66,12 @@ public class ReservationDao {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(INSERT, new String[]{"id"});
-            ps.setString(1, request.getName());
-            ps.setString(2, request.getDate());
-            ps.setLong(3, request.getTimeId());
+            ps.setString(1, request.name());      // ← getName() → name()
+            ps.setString(2, request.date());      // ← getDate() → date()
+            ps.setLong(3, request.timeId());      // ← getTimeId() → timeId()
             return ps;
         }, keyHolder);
-        return keyHolder.getKey().longValue();
+        return Objects.requireNonNull(keyHolder.getKey()).longValue();
     }
 
     public void deleteById(Long id) {
