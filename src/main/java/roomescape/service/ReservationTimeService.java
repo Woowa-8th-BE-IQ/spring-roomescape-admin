@@ -21,7 +21,7 @@ public class ReservationTimeService {
     }
 
     public ReservationTime add(ReservationTimeRequest request) {
-        ReservationTime reservationTime = new ReservationTime(null, request.startAt());
+        ReservationTime reservationTime = ReservationTime.ofNew(request.startAt());
         return reservationTimeDao.save(reservationTime);
     }
 

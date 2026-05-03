@@ -29,7 +29,7 @@ public class ReservationService {
                 .orElseThrow(() -> new IllegalArgumentException(
                         "존재하지 않는 시간입니다: timeId=" + request.timeId()
                 ));
-        Reservation reservation = new Reservation(null, request.name(), request.date(), time);
+        Reservation reservation = Reservation.ofNew(request.name(), request.date(), time);
         return reservationDao.save(reservation);
     }
 
