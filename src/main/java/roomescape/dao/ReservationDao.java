@@ -7,7 +7,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import roomescape.domain.Reservation;
 import roomescape.domain.ReservationTime;
-import roomescape.dto.ReservationRequest;
 
 import java.sql.PreparedStatement;
 import java.time.LocalDate;
@@ -35,9 +34,7 @@ public class ReservationDao {
     private static final String DELETE_BY_ID =
             "DELETE FROM reservation WHERE id = ?";
 
-    private final JdbcTemplate jdbcTemplate;
-
-    private final RowMapper<Reservation> rowMapper = (rs, rowNum) -> {
+    private static final RowMapper<Reservation> rowMapper = (rs, rowNum) -> {
         ReservationTime time = new ReservationTime(
                 rs.getLong("time_id"),
                 LocalTime.parse(rs.getString("time_value"))
@@ -50,6 +47,8 @@ public class ReservationDao {
         );
     };
 
+    private final JdbcTemplate jdbcTemplate;
+
     public ReservationDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -58,17 +57,17 @@ public class ReservationDao {
         return jdbcTemplate.query(SELECT_ALL, rowMapper);
     }
 
-    public Reservation save(ReservationRequest request, ReservationTime time) {
+    public Reservation save(Reservation reservation) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(INSERT, new String[]{"id"});
-            ps.setString(1, request.name());
-            ps.setString(2, request.date().toString());
-            ps.setLong(3, request.timeId());
+            ps.setString(1, reservation.getName());
+            ps.setString(2, reservation.getDate().toString());
+            ps.setLong(3, reservation.getTime().id());
             return ps;
         }, keyHolder);
         Long id = Objects.requireNonNull(keyHolder.getKey()).longValue();
-        return new Reservation(id, request.name(), request.date(), time);
+        return new Reservation(id, reservation.getName(), reservation.getDate(), reservation.getTime());
     }
 
     public void deleteById(Long id) {

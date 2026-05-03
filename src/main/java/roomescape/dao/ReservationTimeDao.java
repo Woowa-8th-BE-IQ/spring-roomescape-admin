@@ -7,7 +7,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import roomescape.domain.ReservationTime;
-import roomescape.dto.ReservationTimeRequest;
 
 import java.sql.PreparedStatement;
 import java.time.LocalTime;
@@ -30,13 +29,13 @@ public class ReservationTimeDao {
     private static final String DELETE_BY_ID =
             "DELETE FROM reservation_time WHERE id = ?";
 
-    private final JdbcTemplate jdbcTemplate;
-
-    private final RowMapper<ReservationTime> rowMapper = (rs, rowNum) ->
+    private static final RowMapper<ReservationTime> rowMapper = (rs, rowNum) ->
             new ReservationTime(
                     rs.getLong("id"),
                     LocalTime.parse(rs.getString("start_at"))
             );
+
+    private final JdbcTemplate jdbcTemplate;
 
     public ReservationTimeDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -56,15 +55,15 @@ public class ReservationTimeDao {
         }
     }
 
-    public ReservationTime save(ReservationTimeRequest request) {
+    public ReservationTime save(ReservationTime reservationTime) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(INSERT, new String[]{"id"});
-            ps.setString(1, request.startAt().toString());
+            ps.setString(1, reservationTime.startAt().toString());
             return ps;
         }, keyHolder);
         Long id = Objects.requireNonNull(keyHolder.getKey()).longValue();
-        return new ReservationTime(id, request.startAt());
+        return new ReservationTime(id, reservationTime.startAt());
     }
 
     public void deleteById(Long id) {

@@ -21,7 +21,8 @@ public class ReservationTimeService {
     }
 
     public ReservationTime add(ReservationTimeRequest request) {
-        return reservationTimeDao.save(request);
+        ReservationTime reservationTime = new ReservationTime(null, request.startAt());
+        return reservationTimeDao.save(reservationTime);
     }
 
     public void delete(Long id) {
