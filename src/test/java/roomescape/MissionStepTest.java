@@ -2,14 +2,16 @@ package roomescape;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
+import roomescape.controller.ReservationController;
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -17,8 +19,9 @@ import static org.hamcrest.Matchers.is;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class MissionStepTest {
+
     @Autowired
-    private roomescape.controller.ReservationController reservationController;
+    private ReservationController reservationController;
 
     @Test
     void 예약_조회() {
@@ -26,7 +29,7 @@ public class MissionStepTest {
                 .when().get("/reservations")
                 .then().log().all()
                 .statusCode(200)
-                .body("size()", is(0)); // 아직 생성 요청이 없으니 0개
+                .body("size()", is(0));
     }
 
     @Test
@@ -55,12 +58,10 @@ public class MissionStepTest {
 
     @Test
     void 예약과_시간_연결() {
-        // 시간 먼저 등록
         Map<String, String> timeParams = new HashMap<>();
         timeParams.put("startAt", "10:00");
         RestAssured.given().contentType(ContentType.JSON).body(timeParams).post("/times");
 
-        // 예약 추가 (timeId = 1)
         Map<String, Object> reservation = new HashMap<>();
         reservation.put("name", "브라운");
         reservation.put("date", "2023-08-05");
