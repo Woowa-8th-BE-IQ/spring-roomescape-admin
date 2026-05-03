@@ -2,7 +2,6 @@ package roomescape.service;
 
 import org.springframework.stereotype.Service;
 import roomescape.dao.ReservationDao;
-import roomescape.dao.ReservationTimeDao;
 import roomescape.domain.Reservation;
 import roomescape.domain.ReservationTime;
 import roomescape.dto.ReservationRequest;
@@ -13,11 +12,11 @@ import java.util.List;
 public class ReservationService {
 
     private final ReservationDao reservationDao;
-    private final ReservationTimeDao reservationTimeDao;
+    private final ReservationTimeService reservationTimeService;
 
-    public ReservationService(ReservationDao reservationDao, ReservationTimeDao reservationTimeDao) {
+    public ReservationService(ReservationDao reservationDao, ReservationTimeService reservationTimeService) {
         this.reservationDao = reservationDao;
-        this.reservationTimeDao = reservationTimeDao;
+        this.reservationTimeService = reservationTimeService;
     }
 
     public List<Reservation> findAll() {
@@ -25,10 +24,7 @@ public class ReservationService {
     }
 
     public Reservation add(ReservationRequest request) {
-        ReservationTime time = reservationTimeDao.findById(request.timeId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "존재하지 않는 시간입니다: timeId=" + request.timeId()
-                ));
+        ReservationTime time = reservationTimeService.findById(request.timeId());
         Reservation reservation = Reservation.ofNew(request.name(), request.date(), time);
         return reservationDao.save(reservation);
     }

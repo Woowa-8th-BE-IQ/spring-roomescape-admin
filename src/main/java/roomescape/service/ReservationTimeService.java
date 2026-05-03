@@ -20,6 +20,13 @@ public class ReservationTimeService {
         return reservationTimeDao.findAll();
     }
 
+    public ReservationTime findById(Long id) {
+        return reservationTimeDao.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "존재하지 않는 시간입니다: timeId=" + id
+                ));
+    }
+
     public ReservationTime add(ReservationTimeRequest request) {
         ReservationTime reservationTime = ReservationTime.ofNew(request.startAt());
         return reservationTimeDao.save(reservationTime);
